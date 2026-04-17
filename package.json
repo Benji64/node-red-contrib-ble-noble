@@ -1,0 +1,25 @@
+{
+  "name": "node-red-contrib-ble-noble",
+  "version": "2.0.0",
+  "description": "Modern BLE nodes for Node-RED using @abandonware/noble — scan + all-in-one device node",
+  "author": "Benjamin",
+  "license": "MIT",
+  "keywords": [
+    "node-red",
+    "bluetooth",
+    "ble",
+    "noble",
+    "bluetooth-low-energy",
+    "raspberry-pi"
+  ],
+  "dependencies": {
+    "@abandonware/noble": "^1.9.2-15"
+  },
+  "node-red": {
+    "nodes": {
+      "ble-controller": "ble-controller.js",
+      "ble-scan": "ble-scan.js",
+      "ble-device": "ble-device.js"
+    }
+  }
+}

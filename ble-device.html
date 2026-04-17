@@ -1,0 +1,109 @@
+<script type="text/javascript">
+RED.nodes.registerType('ble-device', {
+    category: 'hardware',
+    color: '#3FADB5',
+    defaults: {
+        name:            { value: '' },
+        controller:      { value: '', type: 'ble-controller', required: true },
+        deviceId:        { value: '', required: true },
+        defaultChar:     { value: '' },
+        autoReconnect:   { value: true },
+        subscribeChars:  { value: [] }
+    },
+    inputs: 1,
+    outputs: 3,
+    icon: 'bluetooth.png',
+    label: function() { return this.name || 'BLE Device'; },
+    inputLabels: ['command'],
+    outputLabels: ['services', 'notifications', 'write ack'],
+
+    oneditprepare: function() {
+        // Render the subscribeChars list
+        const container = $('#subscribe-chars-container');
+        const chars = this.subscribeChars || [];
+
+        function addRow(uuid) {
+            const row = $('<div class="form-row" style="display:flex;gap:6px;margin-bottom:4px;"></div>');
+            const input = $('<input type="text" placeholder="char UUID e.g. 2a37" style="flex:1;">').val(uuid);
+            const btn   = $('<button class="red-ui-button" style="flex:none;"><i class="fa fa-trash"></i></button>');
+            btn.on('click', () => row.remove());
+            row.append(input).append(btn);
+            container.append(row);
+        }
+
+        chars.forEach(addRow);
+
+        $('#subscribe-chars-add').on('click', () => addRow(''));
+    },
+
+    oneditsave: function() {
+        const uuids = [];
+        $('#subscribe-chars-container input').each(function() {
+            const v = $(this).val().trim();
+            if (v) uuids.push(v);
+        });
+        this.subscribeChars = uuids;
+    }
+});
+</script>
+
+<script type="text/x-red" data-template-name="ble-device">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="BLE Device">
+    </div>
+    <div class="form-row">
+        <label for="node-input-controller"><i class="fa fa-cog"></i> Controller</label>
+        <input type="text" id="node-input-controller">
+    </div>
+
+    <hr>
+    <div class="form-row">
+        <label for="node-input-deviceId"><i class="fa fa-bluetooth-b"></i> Device ID</label>
+        <input type="text" id="node-input-deviceId" placeholder="aa:bb:cc:dd:ee:ff">
+    </div>
+    <div class="form-row">
+        <label for="node-input-defaultChar"><i class="fa fa-exchange"></i> Default char UUID</label>
+        <input type="text" id="node-input-defaultChar" placeholder="2a37  (used when msg.char is absent)">
+    </div>
+
+    <hr>
+    <div class="form-row">
+        <label><i class="fa fa-bell"></i> Subscribe on connect</label>
+        <div id="subscribe-chars-container" style="margin-left:105px;"></div>
+        <button id="subscribe-chars-add" class="red-ui-button" style="margin-left:105px;margin-top:4px;">
+            <i class="fa fa-plus"></i> Add characteristic
+        </button>
+    </div>
+
+    <hr>
+    <div class="form-row">
+        <label for="node-input-autoReconnect"><i class="fa fa-refresh"></i> Auto-reconnect</label>
+        <input type="checkbox" id="node-input-autoReconnect" style="width:auto; margin-top:6px;">
+        <span style="margin-left:6px;">Reconnect automatically on disconnect (5s delay)</span>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="ble-device">
+    <p>Nœud tout-en-un pour gérer un appareil BLE : connexion, découverte, souscription aux notifications et écriture.</p>
+
+    <h3>Entrée — msg.command</h3>
+    <ul>
+        <li><code>"connect"</code> (défaut) — connecte et découvre les services</li>
+        <li><code>"subscribe"</code> + <code>msg.char</code> — souscrit aux notifications d'une caractéristique</li>
+        <li><code>"write"</code> + <code>msg.char</code> + <code>msg.payload</code> — écrit sur une caractéristique<br>
+            <code>msg.payload</code> : Buffer, tableau d'octets ou string<br>
+            <code>msg.withoutResponse</code> : boolean (optionnel)</li>
+        <li><code>"disconnect"</code> — déconnecte</li>
+    </ul>
+
+    <h3>Sorties</h3>
+    <ol>
+        <li><b>Services</b> — liste des services et caractéristiques après connexion</li>
+        <li><b>Notifications</b> — données reçues en souscription (<code>msg.payload</code> = Buffer brut)</li>
+        <li><b>Write ack</b> — confirmation d'écriture réussie</li>
+    </ol>
+
+    <h3>Auto-subscribe</h3>
+    <p>Les UUID listées dans <i>Subscribe on connect</i> sont automatiquement souscrites après chaque connexion.</p>
+</script>

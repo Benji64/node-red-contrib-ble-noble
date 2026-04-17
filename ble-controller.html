@@ -1,0 +1,23 @@
+<script type="text/javascript">
+RED.nodes.registerType('ble-controller', {
+    category: 'config',
+    defaults: {
+        name: { value: '' }
+    },
+    label: function() {
+        return this.name || 'BLE Controller';
+    }
+});
+</script>
+
+<script type="text/x-red" data-template-name="ble-controller">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="BLE Controller">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="ble-controller">
+    <p>Central BLE controller. Manages noble initialization, scanning, peripheral caching and connections.</p>
+    <p>Add one instance and reference it from all BLE nodes.</p>
+</script>
